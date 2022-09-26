@@ -10,8 +10,13 @@ import store from '@/store'
 
 // 定义一个白名单
 const WhiteList = ['/login', '/404']
-router.beforeEach((to, from, next) => {
-  if (store.getters.token) {
+router.beforeEach(async(to, from, next) => {
+  const token = store.getters.token
+  if (token) {
+    if (!store.getters.userId) {
+      await store.dispatch('user/getUserInfo')
+    }
+
     if (to.path === '/login') {
       next('/')
     } else {

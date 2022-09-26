@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import store from '@/store'
 // 通过axios创建axios实例
 const service = axios.create({
   // 环境变量的作用
@@ -17,7 +18,17 @@ const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // 基准地址
   timeout: 5000
 })
-
+// 请求拦截器
+service.interceptors.request.use(config => {
+  if (store.getters.token) {
+    config.headers.Authorization = `Bearer ${store.getters.token}`
+  }
+  return config
+}, error => {
+  return Promise.reject(error.message)
+}
+)
+// 响应拦截器
 service.interceptors.response.use(response => {
   // axios默认加了一层data
   const { message, data, success } = response.data
