@@ -1,7 +1,14 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
 import store from '@/store'
+import router from '@/router'
 // 通过axios创建axios实例
+const Timeout = 3600
+function isCheckTimeOut() {
+  const currenttime = Date.now()
+  const timestamp = (currenttime - store.getters.hrasstime) / 1000
+  return timestamp > Timeout
+}
 const service = axios.create({
   // 环境变量的作用
   // 1.正常公司中有几个环境
@@ -21,6 +28,11 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(config => {
   if (store.getters.token) {
+    if (isCheckTimeOut()) {
+      store.dispatch('user/Logout')
+      router.push('/login')
+      return Promise.reject(new Error('token超时'))
+    }
     config.headers.Authorization = `Bearer ${store.getters.token}`
   }
   return config
@@ -41,7 +53,13 @@ service.interceptors.response.use(response => {
     return Promise.reject(new Error(message))
   }
 }, error => {
-  Message.error(error.message)
+  if (error.response && error.response.status === 401) {
+    store.dispatch('user/Logout')
+    router.push('/login')
+    Message.error('token超时') // 提示错误信息
+  } else {
+    Message.error(error.message)
+  }
   return Promise.reject(error) // 返回执行错误，让当前执行链跳出成功，进入catch
 }
 )
