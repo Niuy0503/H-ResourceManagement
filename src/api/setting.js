@@ -14,3 +14,24 @@ export function addRoleAPI(data) {
     data
   })
 }
+
+export function updateRoleAPI(data) {
+  return request({
+    url: `/sys/role/${data.id}`,
+    method: 'PUT',
+    data
+  })
+}
+
+export function deleteRoleAPI(id) {
+  return request({
+    url: `/sys/role/${id}`,
+    method: 'delete'
+  })
+}
+
+export function getCompanyInfoAPI(companyId) {
+  return request({
+    url: `/company/${companyId}`
+  })
+}

@@ -6,6 +6,7 @@ const getters = {
   hrasstime: state => state.user.hrasstime,
   name: state => state.user.userinfo.username,
   userId: state => state.user.userinfo.userId,
-  staffPhoto: state => state.user.userinfo.staffPhoto
+  staffPhoto: state => state.user.userinfo.staffPhoto,
+  companyId: state => state.user.userinfo.companyId
 }
 export default getters

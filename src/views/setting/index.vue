@@ -18,9 +18,11 @@
             <el-table-column prop="name" label="角色名称" width="240" />
             <el-table-column prop="description" label="描述" />
             <el-table-column label="操作" width="240">
-              <el-button size="small" type="success">分配权限</el-button>
-              <el-button size="small" type="primary">编辑</el-button>
-              <el-button size="small" type="danger">删除</el-button>
+              <template slot-scope="scope">
+                <el-button size="small" type="success">分配权限</el-button>
+                <el-button size="small" type="primary" @click="edit(scope.row)">编辑</el-button>
+                <el-button size="mini" type="danger" @click="del(scope.row.id)">删除</el-button>
+              </template>
             </el-table-column>
           </el-table>
           <!-- 分页器 -->
@@ -47,15 +49,37 @@
           </el-row>
         </el-tab-pane>
 
-        <el-tab-pane label="公司信息" name="second">公司信息</el-tab-pane>
+        <el-tab-pane label="公司信息" name="second">公司信息
+          <el-alert
+            title="对公司名称、公司地址、营业执照、公司地区的更新，将使得公司资料被重新审核，请谨慎修改"
+            type="info"
+            show-icon
+            :closable="false"
+          />
+          <el-form :model="CompanyInfo" label-width="120px" style="margin-top:50px">
+            <el-form-item label="公司名称">
+              <el-input v-model="CompanyInfo.name" disabled style="width:400px" />
+            </el-form-item>
+            <el-form-item label="公司地址">
+              <el-input v-model="CompanyInfo.companyAddress" disabled style="width:400px" />
+            </el-form-item>
+            <el-form-item label="邮箱">
+              <el-input v-model="CompanyInfo.mailbox" disabled style="width:400px" />
+            </el-form-item>
+            <el-form-item label="备注">
+              <el-input v-model="CompanyInfo.remarks" type="textarea" :rows="3" disabled style="width:400px" />
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
-    <AddRole :disvisible.sync="disvisible" @refreshList="getRoleList" />
+    <AddRole ref="addrole" :disvisible.sync="disvisible" @refreshList="getRoleList" />
   </div>
 </template>
 
 <script>
-import { getRoleListAPI } from '@/api'
+import { getRoleListAPI, deleteRoleAPI, getCompanyInfoAPI } from '@/api'
+import { mapGetters } from 'vuex'
 import AddRole from './components/AddRole.vue'
 export default {
   name: 'Setting',
@@ -72,11 +96,16 @@ export default {
       RoleList: [],
       total: 0,
       loading: false,
-      disvisible: false
+      disvisible: false,
+      CompanyInfo: {}
     }
+  },
+  computed: {
+    ...mapGetters(['companyId'])
   },
   created() {
     this.getRoleList()
+    this.getCompanyInfo()
   },
   methods: {
     async getRoleList() {
@@ -85,7 +114,11 @@ export default {
         const { total, rows } = await getRoleListAPI(this.page)
         this.RoleList = rows
         this.total = total
-        console.log(this.RoleList)
+        if (this.total > 0 && this.RoleList.length === 0) {
+          this.page.page--
+          this.getRoleList()
+        }
+        // console.log(this.RoleList)
       } catch (err) {
         console.log(err.message)
       } finally {
@@ -94,6 +127,43 @@ export default {
     },
     AddRole() {
       this.disvisible = true
+    },
+    edit(row) {
+      this.$refs.addrole.Formdata = { ...row }
+      this.disvisible = true
+    },
+    async del(id) {
+      // this.$confirm('删除选中的角色, 是否继续?', '提示', {
+      //   confirmButtonText: '确定',
+      //   cancelButtonText: '取消',
+      //   type: 'warning'
+      // }).then(() => {
+      //   this.$message({
+      //     type: 'success',
+      //     message: '删除成功!'
+      //   })
+      // }).catch(() => {
+      //   this.$message({
+      //     type: 'info',
+      //     message: '已取消'
+      //   })
+      // })
+      try {
+        await this.$confirm('删除选中的角色, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        await deleteRoleAPI(id)
+        this.getRoleList()
+        this.$message.success('删除成功~')
+      } catch (err) {
+        this.$message.error('删除失败！')
+        console.log(err)
+      }
+    },
+    async getCompanyInfo() {
+      this.CompanyInfo = await getCompanyInfoAPI(this.companyId)
     }
   }
 }
