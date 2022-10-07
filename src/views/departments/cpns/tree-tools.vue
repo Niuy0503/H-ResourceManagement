@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import { delDepartments } from '@/api'
 export default {
   props: {
     treeNode: {
@@ -50,8 +51,17 @@ export default {
         this.$emit('adddepts', this.treeNode)
       } else if (type === 'edit') {
         // 编辑功能
+        this.$emit('editDept', this.treeNode)
       } else {
         // 删除功能
+        this.$confirm('是否确认删除该部门', '提示', {
+          type: 'warning'
+        }).then(async res => {
+          return delDepartments(this.treeNode.id)
+        }).then(res => {
+          this.$$message.success('删除成功!')
+          this.$emit('refreshList')
+        })
       }
     }
   }
