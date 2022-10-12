@@ -3,9 +3,10 @@
 
 // 实现组件的自动注册
 // require.context()
+import * as filters from '@/filters/index'
 const fn = require.context('./', true, /\.vue$/)
-console.log(fn.keys())
-console.log(fn('./PageTools/index.vue')) // 根据路径查找模块
+// console.log(fn.keys())
+// console.log(fn('./PageTools/index.vue')) // 根据路径查找模块
 
 const components = fn.keys().map(ele => {
   return fn(ele)
@@ -16,5 +17,10 @@ export default {
     components.forEach(ele => {
       Vue.component(ele.default.name, ele.default)
     })
+
+    Object.keys(filters).forEach(key => {
+      Vue.filter(key, filters[key])
+    })
   }
 }
+
