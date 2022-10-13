@@ -39,3 +39,40 @@ export function importEmployee(data) {
     data
   })
 }
+
+// 员工详情
+export function getPersonalDetail(id) {
+  return request({
+    url: `/employees/${id}/personalInfo`
+  })
+}
+
+// 保存更新
+export function updatePersonal(data) {
+  return request({
+    url: `/employees/${data.userId}/personalInfo`,
+    method: 'put',
+    data
+  })
+}
+
+/** **
+ * 获取用户的岗位信息
+ *
+ * ****/
+export function getJobDetail(id) {
+  return request({
+    url: `/employees/${id}/jobs`
+  })
+}
+
+/**
+ * 保存岗位信息
+ * ****/
+export function updateJob(data) {
+  return request({
+    url: `/employees/${data.userId}/jobs`,
+    method: 'put',
+    data
+  })
+}
