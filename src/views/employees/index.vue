@@ -16,6 +16,21 @@
       <el-table v-loading="loading" border :data="list">
         <el-table-column label="序号" sortable="" width="80" type="index" />
         <el-table-column label="姓名" prop="username" />
+        <el-table-column label="头像" sortable="">
+          <template slot-scope="{ row }">
+            <img
+              v-imgError="require('@/assets/common/head.jpg')"
+              style="
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            padding: 10px;
+            "
+              :src="row.staffPhoto"
+              @click="showCode(row.staffPhoto)"
+            >
+          </template>
+        </el-table-column>
         <el-table-column label="工号" prop="workNumber" />
         <el-table-column label="聘用形式" prop="formOfEmployment" :formatter="formatterFn" />
         <el-table-column label="部门" prop="departmentName" />
@@ -52,6 +67,9 @@
           @size-change="getEmployeeList"
         />
       </el-row>
+      <el-dialog title="二维码" :visible.sync="dialogshowCode">
+        <canvas ref="canvas" />
+      </el-dialog>
     </el-card>
     <AddEmployees ref="addemployees" :showdialog.sync="showdialog" />
   </div>
@@ -62,6 +80,7 @@ import PageTools from '@/components/PageTools/index.vue'
 import EmployeeEnum from '@/api/constant/employees'
 import { getEmployeeList, delEmployee } from '@/api'
 import AddEmployees from './cpns/addemployees.vue'
+import QRcode from 'qrcode'
 export default {
   name: 'Employees',
   components: {
@@ -78,7 +97,8 @@ export default {
       total: 0,
       loading: false,
       hireType: EmployeeEnum.hireType,
-      showdialog: false
+      showdialog: false,
+      dialogshowCode: false
     }
   },
   created() {
@@ -155,6 +175,13 @@ export default {
     },
     goDetail(row) {
       this.$router.push('/employees/detail/' + row.id)
+    },
+    showCode(staffPhoto) {
+      if (!staffPhoto) return this.$message.error('暂无头像！')
+      this.dialogshowCode = true
+      this.$nextTick(() => {
+        QRcode.toCanvas(this.$refs.canvas, staffPhoto)
+      })
     }
   }
 }
